@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Daftar Akun - STUDYNE</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body class="auth-page auth-register-page">
+    <div class="auth-orb orb-one"></div>
+    <div class="auth-orb orb-two"></div>
+    <main class="auth-shell auth-shell-register">
+        <section class="auth-visual">
+            <a href="index.html" class="auth-brand"><img src="images/logo.svg" alt="STUDYNE"></a>
+            <div class="visual-content">
+                <span class="visual-badge">STUDYNE • LMS</span>
+                <h1>Satu akun untuk perjalanan belajar yang lebih terarah.</h1>
+                <p>Buat akun sebagai mahasiswa atau dosen dan gunakan STUDYNE sesuai kebutuhan akademik Anda.</p>
+                <div class="visual-points">
+                    <div><span>✓</span><p>Dashboard sesuai peran pengguna</p></div>
+                    <div><span>✓</span><p>Mata kuliah, materi, dan tugas lebih terorganisir</p></div>
+                    <div><span>✓</span><p>Data akun tersimpan di perangkat untuk prototype</p></div>
+                </div>
+            </div>
+            <div class="visual-footer">Learning Management System • UHAMKA</div>
+        </section>
+
+        <section class="auth-panel">
+            <div class="auth-panel-top"><a href="index.html">← Beranda</a></div>
+            <div class="auth-heading auth-heading-left">
+                <span class="auth-kicker">BUAT AKUN</span>
+                <h2>Daftar di STUDYNE</h2>
+                <p>Pilih jenis akun, lalu lengkapi data Anda.</p>
+            </div>
+            <div id="registerAlert" class="alert hidden"></div>
+
+            <form id="registerForm" class="auth-form">
+                <div class="form-group">
+                    <label>Daftar sebagai</label>
+                    <div class="role-grid role-grid-large">
+                        <button type="button" class="role-btn active" data-role="mahasiswa"><span>🎓</span><strong>Mahasiswa</strong><small>Akun pembelajaran</small></button>
+                        <button type="button" class="role-btn" data-role="dosen"><span>👨‍🏫</span><strong>Dosen</strong><small>Akun pengajar</small></button>
+                    </div>
+                </div>
+                <input type="hidden" id="registerRole" value="mahasiswa">
+
+                <div class="form-group"><label for="nama">Nama Lengkap</label><input type="text" id="nama" placeholder="Masukkan nama lengkap" autocomplete="name" required></div>
+                <div class="form-row">
+                    <div class="form-group"><label for="identity" id="identityLabel">NIM</label><input type="text" id="identity" placeholder="Masukkan NIM" autocomplete="username" required></div>
+                    <div class="form-group" id="semesterGroup"><label for="semester">Semester</label><input type="number" id="semester" min="1" max="14" placeholder="Contoh: 7"></div>
+                </div>
+                <div class="form-group"><label for="prodi" id="prodiLabel">Program Studi</label><input type="text" id="prodi" placeholder="Contoh: Sistem dan Teknologi Informasi" required></div>
+                <div class="form-row">
+                    <div class="form-group"><label for="registerPassword">Password</label><input type="password" id="registerPassword" placeholder="Minimal 8 karakter" autocomplete="new-password" required></div>
+                    <div class="form-group"><label for="confirmPassword">Konfirmasi Password</label><input type="password" id="confirmPassword" placeholder="Ulangi password" autocomplete="new-password" required></div>
+                </div>
+                <button type="submit" class="btn btn-primary btn-full auth-submit"><span>✓</span> Buat Akun</button>
+            </form>
+
+            <div class="auth-switch">Sudah punya akun? <a href="login.html">Masuk sekarang</a></div>
+        </section>
+    </main>
+    <script src="js/data.js"></script>
+    <script src="js/script.js"></script>
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const form = document.getElementById("registerForm");
+            const alertBox = document.getElementById("registerAlert");
+            const roleInput = document.getElementById("registerRole");
+            const roleButtons = document.querySelectorAll(".role-btn");
+            const identityLabel = document.getElementById("identityLabel");
+            const identityInput = document.getElementById("identity");
+            const semesterGroup = document.getElementById("semesterGroup");
+            const semesterInput = document.getElementById("semester");
+            const prodiLabel = document.getElementById("prodiLabel");
+
+            function showAlert(message, type = "error") {
+                alertBox.textContent = message;
+                alertBox.className = "alert " + type;
+            }
+
+            function setRole(role) {
+                roleInput.value = role;
+                roleButtons.forEach(button => button.classList.toggle("active", button.dataset.role === role));
+                const dosen = role === "dosen";
+                identityLabel.textContent = dosen ? "NIDN" : "NIM";
+                identityInput.placeholder = dosen ? "Masukkan NIDN" : "Masukkan NIM";
+                identityInput.value = "";
+                semesterGroup.style.display = dosen ? "none" : "flex";
+                semesterInput.required = !dosen;
+                prodiLabel.textContent = dosen ? "Program Studi / Fakultas" : "Program Studi";
+            }
+
+            roleButtons.forEach(button => button.addEventListener("click", () => setRole(button.dataset.role)));
+
+            form.addEventListener("submit", function (event) {
+                event.preventDefault();
+                const role = roleInput.value;
+                const result = registerAccount({
+                    nama: document.getElementById("nama").value.trim(),
+                    identity: identityInput.value.trim(),
+                    password: document.getElementById("registerPassword").value,
+                    confirmPassword: document.getElementById("confirmPassword").value,
+                    prodi: document.getElementById("prodi").value.trim(),
+                    semester: semesterInput.value,
+                    role
+                });
+                if (!result.success) {
+                    showAlert(result.message, "error");
+                    return;
+                }
+                const roleName = role === "dosen" ? "dosen" : "mahasiswa";
+                window.location.href = "login.html?registered=1&role=" + roleName;
+            });
+        });
+    </script>
+</body>
+</html>

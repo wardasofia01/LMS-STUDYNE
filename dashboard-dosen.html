@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="id">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Dashboard Dosen - STUDYNE</title><link rel="stylesheet" href="css/style.css"></head>
+<body>
+<div class="app-shell"><div id="sidebar"></div><div class="sidebar-backdrop" id="sidebarBackdrop"></div>
+<main class="main-content">
+<header class="topbar"><button type="button" class="menu-toggle" onclick="toggleSidebar()">☰</button><div class="topbar-title">Dashboard Dosen</div><div class="topbar-user" id="topbarUser"></div></header>
+<div class="page-content">
+<section class="welcome-section"><div><span class="eyebrow">STUDYNE</span><h1>Halo, <span id="userName">Dosen</span> 👋</h1><p>Kelola mata kuliah dan pantau data mahasiswa melalui dashboard dosen.</p></div></section>
+<section class="stats-grid">
+<div class="stat-card"><div class="stat-icon">📚</div><div><span>Mata Kuliah</span><strong id="totalTeacherCourses">0</strong></div></div>
+<div class="stat-card"><div class="stat-icon">👥</div><div><span>Mahasiswa</span><strong id="totalStudents">0</strong></div></div>
+<div class="stat-card"><div class="stat-icon">📝</div><div><span>Tugas</span><strong id="totalAssignments">0</strong></div></div>
+<div class="stat-card"><div class="stat-icon">🔔</div><div><span>Notifikasi</span><strong id="notificationCount">0</strong></div></div>
+</section>
+<section class="content-section"><div class="section-heading"><div><span class="eyebrow">PENGELOLAAN</span><h2>Mata Kuliah Saya</h2></div><a href="courses.html" class="text-link">Lihat semua →</a></div><div id="teacherCourseList" class="course-grid"></div></section>
+<section id="mahasiswa" class="content-section"><div class="section-heading"><div><span class="eyebrow">DATA AKADEMIK</span><h2>Mahasiswa Terdaftar</h2></div></div><div class="table-wrapper"><table class="data-table"><thead><tr><th>Nama</th><th>NIM</th><th>Program Studi</th><th>Semester</th></tr></thead><tbody id="studentTable"></tbody></table></div></section>
+<section id="tugas" class="content-section"><div class="section-heading"><div><span class="eyebrow">AKTIVITAS</span><h2>Tugas & Pengumpulan</h2></div></div><div id="assignmentList" class="assignment-list"></div></section>
+<section id="notifikasi" class="content-section"><div class="section-heading"><div><span class="eyebrow">INFORMASI</span><h2>Notifikasi</h2></div></div><div id="notificationList" class="notification-list"></div></section>
+</div></main></div>
+<script src="js/data.js"></script><script src="js/script.js"></script>
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    const user = requireAuth("dosen"); if (!user) return;
+    renderSidebar("dashboard");
+    document.getElementById("userName").textContent = user.nama || "Dosen";
+    document.getElementById("topbarUser").textContent = getInitials(user.nama || "Dosen");
+    const students = getAccounts().filter(a => a.role === "mahasiswa");
+    document.getElementById("totalTeacherCourses").textContent = TEACHER_COURSES.length;
+    document.getElementById("totalStudents").textContent = students.length;
+    const assignments = TEACHER_COURSES.flatMap(course => (MATERIALS[course.id] || []).filter(item => item.type === "tugas").map(item => ({...item, course})));
+    const submissions = getSubmissions();
+    document.getElementById("totalAssignments").textContent = assignments.length;
+    document.getElementById("notificationCount").textContent = NOTIFICATIONS.length;
+    document.getElementById("teacherCourseList").innerHTML = TEACHER_COURSES.map(courseCardHTML).join("");
+    document.getElementById("studentTable").innerHTML = students.length ? students.map(s => `<tr><td>${escapeHTML(s.nama)}</td><td>${escapeHTML(s.identity)}</td><td>${escapeHTML(s.prodi || "-")}</td><td>${escapeHTML(String(s.semester || "-"))}</td></tr>`).join("") : `<tr><td colspan="4"><div class="table-empty">Belum ada mahasiswa yang terdaftar.</div></td></tr>`;
+    document.getElementById("notificationList").innerHTML = NOTIFICATIONS.map(n => `<div class="notification-item"><div class="notification-dot"></div><div><strong>${escapeHTML(n.title)}</strong><p>${escapeHTML(n.message)}</p><small>${escapeHTML(n.date)}</small></div></div>`).join("");
+    document.getElementById("assignmentList").innerHTML = assignments.length ? assignments.map(item => { const collected = submissions.filter(s => s.taskId === item.id); const pending = Math.max(0, students.length - collected.length); return `<article class="assignment-card"><div class="assignment-main"><span class="content-type">TUGAS · ${escapeHTML(item.course.code)}</span><h3>${escapeHTML(item.title)}</h3><p>${escapeHTML(item.description)}</p><small>Deadline: ${escapeHTML(item.deadline || "Belum ditentukan")}</small></div><div class="assignment-stats"><div><strong>${collected.length}</strong><span>Sudah mengumpulkan</span></div><div><strong>${pending}</strong><span>Belum mengumpulkan</span></div></div>${collected.length ? `<div class="submission-table"><table class="data-table"><thead><tr><th>Mahasiswa</th><th>File</th><th>Waktu</th><th>Aksi</th></tr></thead><tbody>${collected.map(s => `<tr><td>${escapeHTML(s.userName || "Mahasiswa")}</td><td>${escapeHTML(s.fileName)}<br><small>${formatFileSize(s.fileSize)}</small></td><td>${escapeHTML(formatDateTime(s.submittedAt))}</td><td><a class="btn btn-secondary btn-small" href="${s.dataUrl}" download="${escapeHTML(s.fileName)}">Unduh</a></td></tr>`).join("")}</tbody></table></div>` : `<div class="assignment-empty">Belum ada mahasiswa yang mengumpulkan tugas ini.</div>`}</article>`; }).join("") : `<div class="empty-state"><div class="empty-icon">📝</div><h3>Belum ada tugas</h3><p>Data tugas akan tampil setelah tersedia pada sistem.</p></div>`;
+});
+</script>
+</body></html>

@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard Mahasiswa - STUDYNE</title><link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<div class="app-shell"><div id="sidebar"></div><div class="sidebar-backdrop" id="sidebarBackdrop"></div>
+<main class="main-content">
+<header class="topbar"><button type="button" class="menu-toggle" onclick="toggleSidebar()">☰</button><div class="topbar-title">Dashboard Mahasiswa</div><div class="topbar-user" id="topbarUser"></div></header>
+<div class="page-content">
+<section class="welcome-section"><div><span class="eyebrow">STUDYNE</span><h1>Halo, <span id="userName">Mahasiswa</span> 👋</h1><p>Pantau pembelajaran, mata kuliah, nilai, dan aktivitas akademik Anda.</p></div></section>
+<section class="stats-grid">
+<div class="stat-card"><div class="stat-icon">📚</div><div><span>Total Mata Kuliah</span><strong id="totalCourses">0</strong></div></div>
+<div class="stat-card"><div class="stat-icon">📈</div><div><span>Rata-rata Progress</span><strong id="averageProgress">0%</strong></div></div>
+<div class="stat-card"><div class="stat-icon">✓</div><div><span>Selesai</span><strong id="completedCourses">0</strong></div></div>
+<div class="stat-card"><div class="stat-icon">🔔</div><div><span>Notifikasi</span><strong id="notificationCount">0</strong></div></div>
+</section>
+<section class="content-section"><div class="section-heading"><div><span class="eyebrow">PEMBELAJARAN</span><h2>Mata Kuliah</h2></div><a href="courses.html" class="text-link">Lihat semua →</a></div><div id="courseList" class="course-grid"></div></section>
+<section id="jadwal" class="content-section"><div class="section-heading"><div><span class="eyebrow">AKADEMIK</span><h2>Jadwal Kuliah</h2></div></div><div id="scheduleList" class="schedule-list"></div></section>
+<section id="nilai" class="content-section"><div class="section-heading"><div><span class="eyebrow">AKADEMIK</span><h2>Nilai & Presensi</h2></div></div><div class="empty-state"><div class="empty-icon">📋</div><h3>Belum ada data nilai</h3><p>Data nilai dan presensi akan tampil setelah tersedia di sistem.</p></div></section>
+<section id="notifikasi" class="content-section"><div class="section-heading"><div><span class="eyebrow">INFORMASI</span><h2>Notifikasi</h2></div></div><div id="notificationList" class="notification-list"></div></section>
+</div></main></div>
+<script src="js/data.js"></script><script src="js/script.js"></script>
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    const user = requireAuth("mahasiswa"); if (!user) return;
+    renderSidebar("dashboard");
+    document.getElementById("userName").textContent = user.nama || "Mahasiswa";
+    document.getElementById("topbarUser").textContent = getInitials(user.nama || "Mahasiswa");
+    const total = COURSES.length;
+    const avg = total ? Math.round(COURSES.reduce((sum, c) => sum + Number(c.progress || 0), 0) / total) : 0;
+    const done = COURSES.filter(c => Number(c.progress || 0) >= 100).length;
+    document.getElementById("totalCourses").textContent = total;
+    document.getElementById("averageProgress").textContent = avg + "%";
+    document.getElementById("completedCourses").textContent = done;
+    document.getElementById("notificationCount").textContent = NOTIFICATIONS.length;
+    document.getElementById("courseList").innerHTML = COURSES.map(courseCardHTML).join("");
+    document.getElementById("scheduleList").innerHTML = COURSES.map(course => `<div class="schedule-item"><div class="schedule-day">${escapeHTML(course.schedule.split(",")[0])}</div><div class="schedule-info"><strong>${escapeHTML(course.name)}</strong><span>${escapeHTML(course.schedule)} · ${course.sks} SKS</span></div></div>`).join("");
+    document.getElementById("notificationList").innerHTML = NOTIFICATIONS.map(n => `<div class="notification-item"><div class="notification-dot"></div><div><strong>${escapeHTML(n.title)}</strong><p>${escapeHTML(n.message)}</p><small>${escapeHTML(n.date)}</small></div></div>`).join("");
+});
+</script>
+</body></html>

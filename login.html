@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Masuk - STUDYNE</title><link rel="stylesheet" href="css/style.css">
+</head>
+<body class="auth-page auth-login-page">
+<div class="auth-orb orb-one"></div><div class="auth-orb orb-two"></div>
+<main class="auth-shell">
+<section class="auth-visual"><a href="index.html" class="auth-brand"><img src="images/logo.svg" alt="STUDYNE"></a><div class="visual-content"><span class="visual-badge">WELCOME BACK</span><h1>Belajar lebih rapi. Mengajar lebih mudah.</h1><p>Masuk ke STUDYNE untuk mengakses ruang akademik sesuai peran Anda.</p><div class="visual-card"><div class="visual-card-icon">✦</div><div><strong>Academic Space</strong><span>Materi • Tugas • Mata Kuliah</span></div></div></div><div class="visual-footer">Learning Management System • 2026</div></section>
+<section class="auth-panel"><div class="auth-panel-top"><a href="index.html">← Beranda</a></div><div class="auth-heading auth-heading-left"><span class="auth-kicker">SELAMAT DATANG</span><h2>Masuk ke STUDYNE</h2><p>Gunakan akun mahasiswa atau dosen yang sudah terdaftar.</p></div><div id="loginAlert" class="alert hidden"></div>
+<form id="loginForm" class="auth-form">
+<div class="form-group"><label>Masuk sebagai</label><div class="role-grid role-grid-large"><button type="button" class="role-btn active" data-role="mahasiswa"><span>🎓</span><strong>Mahasiswa</strong><small>NIM / Username</small></button><button type="button" class="role-btn" data-role="dosen"><span>👨‍🏫</span><strong>Dosen</strong><small>NIDN / Username</small></button></div></div>
+<input type="hidden" id="loginRole" value="mahasiswa">
+<div class="form-group"><label for="identity" id="identityLabel">NIM / Username</label><input type="text" id="identity" placeholder="Masukkan NIM atau username" autocomplete="username" required></div>
+<div class="form-group"><label for="password">Password</label><input type="password" id="password" placeholder="Masukkan password" autocomplete="current-password" required></div>
+<div class="auth-forgot"><button type="button" id="forgotPasswordBtn">Lupa password?</button></div>
+<button type="submit" class="btn btn-primary btn-full auth-submit">Masuk ke Dashboard <span>→</span></button>
+</form>
+<div class="auth-switch">Belum punya akun? <a href="register.html">Daftar sekarang</a></div><div class="auth-security"><span>●</span> Akun dipisahkan berdasarkan peran mahasiswa dan dosen.</div>
+</section></main>
+<div id="resetModal" class="modal-overlay" aria-hidden="true"><div class="reset-modal" role="dialog" aria-modal="true"><button class="modal-close" type="button" id="closeReset">×</button><span class="eyebrow">PEMULIHAN AKUN</span><h2>Atur Ulang Password</h2><p>Masukkan identitas akun dan buat password baru.</p><form id="resetForm"><div class="form-group"><label>Jenis akun</label><select id="resetRole"><option value="mahasiswa">Mahasiswa</option><option value="dosen">Dosen</option></select></div><div class="form-group"><label> NIM / NIDN</label><input id="resetIdentity" required></div><div class="form-group"><label>Password baru</label><input id="resetPassword" type="password" minlength="8" required></div><div class="form-group"><label>Konfirmasi password</label><input id="resetConfirm" type="password" minlength="8" required></div><div id="resetMessage" class="form-message"></div><button class="btn btn-primary btn-full" type="submit">Simpan Password Baru</button></form></div></div>
+<script src="js/data.js"></script><script src="js/script.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded',function(){
+ const form=document.getElementById('loginForm'), buttons=document.querySelectorAll('.role-btn'), role=document.getElementById('loginRole'), label=document.getElementById('identityLabel'), input=document.getElementById('identity'), alertBox=document.getElementById('loginAlert');
+ function alertMsg(msg,type='error'){alertBox.textContent=msg;alertBox.className='alert '+type;}
+ function setRole(value){role.value=value;buttons.forEach(b=>b.classList.toggle('active',b.dataset.role===value));label.textContent=value==='dosen'?'NIDN / Username':'NIM / Username';input.placeholder=value==='dosen'?'Masukkan NIDN atau username':'Masukkan NIM atau username';}
+ buttons.forEach(b=>b.addEventListener('click',()=>setRole(b.dataset.role)));
+ const params=new URLSearchParams(location.search);if(params.get('registered')==='1'){setRole(params.get('role')==='dosen'?'dosen':'mahasiswa');alertMsg('Pendaftaran akun berhasil. Silakan masuk.','success');}
+ form.addEventListener('submit',e=>{e.preventDefault();const result=login(input.value.trim(),document.getElementById('password').value,role.value);if(!result.success){alertMsg(result.message);return}location.href=result.user.role==='dosen'?'dashboard-dosen.html':'dashboard.html';});
+ const modal=document.getElementById('resetModal'), resetRole=document.getElementById('resetRole'), resetForm=document.getElementById('resetForm'), resetMessage=document.getElementById('resetMessage');
+ document.getElementById('forgotPasswordBtn').addEventListener('click',()=>{resetRole.value=role.value;modal.classList.add('show');modal.setAttribute('aria-hidden','false');});
+ function close(){modal.classList.remove('show');modal.setAttribute('aria-hidden','true');resetForm.reset();resetMessage.textContent='';}
+ document.getElementById('closeReset').addEventListener('click',close);modal.addEventListener('click',e=>{if(e.target===modal)close();});
+ resetForm.addEventListener('submit',e=>{e.preventDefault();const r=resetPassword(document.getElementById('resetIdentity').value.trim(),resetRole.value,document.getElementById('resetPassword').value,document.getElementById('resetConfirm').value);resetMessage.className='form-message '+(r.success?'success':'error');resetMessage.textContent=r.message;if(r.success)setTimeout(close,800);});
+});
+</script></body></html>

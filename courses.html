@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="id">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Mata Kuliah - STUDYNE</title><link rel="stylesheet" href="css/style.css"></head>
+<body>
+<div class="app-shell"><div id="sidebar"></div><div class="sidebar-backdrop" id="sidebarBackdrop"></div>
+<main class="main-content">
+<header class="topbar"><button type="button" class="menu-toggle" onclick="toggleSidebar()">☰</button><div class="topbar-title">Mata Kuliah</div><div class="topbar-user" id="topbarUser"></div></header>
+<div class="page-content">
+<section class="page-header"><div><span class="eyebrow">PEMBELAJARAN</span><h1>Mata Kuliah</h1><p id="courseSubtitle">Daftar mata kuliah tersedia.</p></div><div class="search-box"><span>⌕</span><input type="text" id="courseSearch" placeholder="Cari mata kuliah..."></div></section>
+<section class="content-section"><div id="courseList" class="course-grid course-grid-large"></div></section>
+</div></main></div>
+<script src="js/data.js"></script><script src="js/script.js"></script>
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    const user = requireAuth(); if (!user) return;
+    renderSidebar("courses");
+    document.getElementById("topbarUser").textContent = getInitials(user.nama || "");
+    const courses = user.role === "dosen" ? TEACHER_COURSES : COURSES;
+    document.getElementById("courseSubtitle").textContent = user.role === "dosen" ? "Kelola dan lihat mata kuliah yang Anda ampu." : "Lihat mata kuliah dan progres pembelajaran Anda.";
+    const list = document.getElementById("courseList");
+    const search = document.getElementById("courseSearch");
+    function render(keyword = "") {
+        const q = keyword.toLowerCase().trim();
+        const filtered = courses.filter(c => c.name.toLowerCase().includes(q) || c.code.toLowerCase().includes(q));
+        list.innerHTML = filtered.length ? filtered.map(courseCardHTML).join("") : `<div class="empty-state full-width"><div class="empty-icon">🔍</div><h3>Mata kuliah tidak ditemukan</h3><p>Coba gunakan kata kunci yang berbeda.</p></div>`;
+    }
+    render(); search.addEventListener("input", () => render(search.value));
+});
+</script>
+</body></html>
